@@ -4,10 +4,14 @@ use anyhow::{anyhow, Result};
 use ipnet::Ipv4Net;
 
 fn split_up(net: Ipv4Net, subtract: Ipv4Net) -> Result<()> {
-    let conflict = (net.network() >= subtract.network()
+    let conflict = ((net.network() >= subtract.network()
         && net.network() <= subtract.broadcast())
         || (net.broadcast() >= subtract.network()
-            && net.broadcast() <= subtract.broadcast());
+            && net.broadcast() <= subtract.broadcast()))
+        || ((subtract.network() >= net.network()
+            && subtract.network() <= net.broadcast())
+            || (subtract.broadcast() >= net.network()
+                && subtract.broadcast() <= net.broadcast()));
 
     if conflict {
         let npfx = net.prefix_len() + 1;
